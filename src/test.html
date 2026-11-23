@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Prueba Password Manager</title>
+</head>
+
+<body>
+
+    <h1>Prueba de My Password Manager</h1>
+
+    <button onclick="crearCredencial()">
+        Crear credencial de prueba
+    </button>
+
+    <button onclick="obtenerCredenciales()">
+        Ver credenciales
+    </button>
+
+    <button onclick="actualizarCredencial()">
+        Actualizar credencial
+    </button>
+
+    <button onclick="eliminarCredencial()">
+        Eliminar credencial
+    </button>
+
+    <pre id="resultado"></pre>
+
+    <script>
+
+        async function crearCredencial() {
+
+            const credencial = {
+                name: "Google",
+                website: "https://google.com",
+                username: "usuario.prueba@gmail.com",
+                password: "PasswordPrueba123!",
+                notes: "Esta es solamente una contraseña de prueba."
+            };
+
+            const respuesta = await fetch(
+                "http://localhost:3000/credentials",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(credencial)
+                }
+            );
+
+            const resultado = await respuesta.json();
+
+            document.getElementById("resultado").textContent =
+                JSON.stringify(resultado, null, 2);
+        }
+
+
+        async function obtenerCredenciales() {
+
+            const respuesta = await fetch(
+                "http://localhost:3000/credentials"
+            );
+
+            const resultado = await respuesta.json();
+
+            document.getElementById("resultado").textContent =
+                JSON.stringify(resultado, null, 2);
+        }
+
+        async function actualizarCredencial() {
+
+            const credencialActualizada = {
+                name: "Google",
+                website: "https://google.com",
+                username: "usuario.prueba@gmail.com",
+                password: "NuevaPasswordPrueba456!",
+                notes: "Contraseña actualizada de prueba."
+            };
+
+            const respuesta = await fetch(
+                "http://localhost:3000/credentials/1",
+                {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(credencialActualizada)
+                }
+            );
+
+            const resultado = await respuesta.json();
+
+            document.getElementById("resultado").textContent =
+                JSON.stringify(resultado, null, 2);
+        }
+
+        async function eliminarCredencial() {
+
+            const respuesta = await fetch(
+                "http://localhost:3000/credentials/1",
+                {
+                    method: "DELETE"
+                }
+            );
+
+            const resultado = await respuesta.json();
+
+            document.getElementById("resultado").textContent =
+                JSON.stringify(resultado, null, 2);
+        }
+
+    </script>
+
+</body>
+
+</html>

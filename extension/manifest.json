@@ -1,0 +1,46 @@
+{
+    "manifest_version": 3,
+    "name": "My Password Manager",
+    "version": "1.0",
+    "description": "Gestor de contraseñas local para Helium",
+    "permissions": [
+        "storage",
+        "activeTab",
+        "scripting",
+        "tabs"
+    ],
+    "host_permissions": [
+        "http://localhost:3000/*",
+        "<all_urls>"
+    ],
+    "action": {
+        "default_popup": "popup.html"
+    },
+    "background": {
+        "service_worker": "background.js"
+    },
+    "commands": {
+        "autofill-credential": {
+            "suggested_key": {
+                "default": "Ctrl+Shift+X",
+                "mac": "Command+Shift+X"
+            },
+            "description": "Autorrellenar credencial para la URL actual"
+        }
+    },
+    "content_scripts": [
+        {
+            "matches": [
+                "<all_urls>"
+            ],
+            "js": [
+                "content.js"
+            ],
+            "css": [
+                "content.css"
+            ],
+            "run_at": "document_idle",
+            "all_frames": true
+        }
+    ]
+}

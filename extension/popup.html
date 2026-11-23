@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <style>
+        /* =========================================
+       MODO CLARO (Lila suave y vibrante)
+       ========================================= */
+        :root {
+            --bg: #F5F3FF;
+            --surface: #FFFFFF;
+            --surface-hover: #EDE9FE;
+            --primary: #8B5CF6;
+            --primary-hover: #7C3AED;
+            --text-main: #2E1065;
+            --text-muted: #6B21A8;
+            --border: #DDD6FE;
+            --danger: #EF4444;
+            --input-bg: #FFFFFF;
+        }
+
+        /* =========================================
+       MODO OSCURO (Púrpura Profundo y Uva)
+       ========================================= */
+        body.dark-mode {
+            --bg: #110B1C;
+            --surface: #23123A;
+            --surface-hover: #331B52;
+            --primary: #A78BFA;
+            --primary-hover: #8B5CF6;
+            --text-main: #F3E8FF;
+            --text-muted: #D8B4FE;
+            --border: #4C1D95;
+            --danger: #FCA5A5;
+            --input-bg: #1A0E2A;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            width: 340px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            font-size: 14px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .header {
+            background: var(--surface);
+            padding: 12px 16px;
+            border-bottom: 2px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+
+        .header h2 {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-main);
+            margin: 0;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-icon {
+            background: var(--surface-hover);
+            border: none;
+            cursor: pointer;
+            color: var(--text-main);
+            font-size: 14px;
+            padding: 6px 8px;
+            border-radius: 6px;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-icon:hover {
+            background: var(--border);
+        }
+
+        .container {
+            padding: 16px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Formularios */
+        .form-group {
+            margin-bottom: 12px;
+            position: relative;
+            /* Para posicionar el botón del generador */
+        }
+
+        input[type="text"],
+        input[type="password"],
+        input[type="file"] {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 13px;
+            outline: none;
+            background: var(--input-bg);
+            color: var(--text-main);
+            transition: all 0.3s;
+        }
+
+        input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+        }
+
+        /* --- ESTILOS NUEVOS: GENERADOR --- */
+        .password-wrapper {
+            display: flex;
+            gap: 6px;
+            align-items: stretch;
+        }
+
+        .password-wrapper input {
+            flex-grow: 1;
+        }
+
+        .btn-generator {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0 12px;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        body.dark-mode .btn-generator {
+            color: #110B1C;
+        }
+
+        .btn-generator:hover {
+            background: var(--primary-hover);
+        }
+
+        .btn-generator:active {
+            transform: scale(0.95);
+        }
+
+        .generator-options {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 6px;
+            font-size: 11px;
+            color: var(--text-muted);
+            align-items: center;
+        }
+
+        .generator-options select {
+            background: var(--input-bg);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 2px 4px;
+            font-size: 11px;
+            outline: none;
+        }
+
+        button.btn-primary {
+            width: 100%;
+            padding: 10px;
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 4px;
+        }
+
+        body.dark-mode button.btn-primary {
+            color: #110B1C;
+        }
+
+        button.btn-primary:hover {
+            background: var(--primary-hover);
+        }
+
+        /* Pestañas */
+        .tabs {
+            display: flex;
+            background: var(--surface);
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            margin-bottom: 16px;
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 10px 8px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            color: var(--text-muted);
+            background: var(--surface);
+            border: none;
+            transition: all 0.2s;
+        }
+
+        .tab:hover {
+            background: var(--surface-hover);
+        }
+
+        .tab.active {
+            background: var(--surface-hover);
+            color: var(--text-main);
+            border-bottom: 3px solid var(--primary);
+        }
+
+        /* Lista */
+        .search-box {
+            margin-bottom: 12px;
+            position: relative;
+        }
+
+        .search-box input {
+            padding-left: 34px;
+        }
+
+        .search-box::before {
+            content: "🔍";
+            position: absolute;
+            left: 12px;
+            top: 11px;
+            font-size: 12px;
+            opacity: 0.6;
+        }
+
+        #credentials-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .credential {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 12px;
+            display: flex;
+            align-items: center;
+            transition: all 0.2s;
+        }
+
+        .credential:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            border-color: var(--primary);
+            transform: translateY(-1px);
+            background: var(--surface-hover);
+        }
+
+        /* AVATAR (Iniciales) */
+        .cred-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+            color: white;
+            margin-right: 12px;
+            text-transform: uppercase;
+            flex-shrink: 0;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .cred-info {
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            flex-grow: 1;
+        }
+
+        .cred-name {
+            font-weight: 700;
+            font-size: 13px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .cred-user {
+            font-size: 11px;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-top: 2px;
+        }
+
+        .cred-actions {
+            display: flex;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+
+        .cred-actions button {
+            background: var(--surface-hover);
+            border: none;
+            cursor: pointer;
+            padding: 6px;
+            border-radius: 6px;
+            font-size: 12px;
+            color: var(--text-main);
+            transition: all 0.2s;
+        }
+
+        .cred-actions button:hover {
+            background: var(--border);
+            color: var(--primary);
+        }
+
+        .cred-actions button.btn-del:hover {
+            background: var(--danger);
+            color: #fff;
+        }
+
+        /* --- ESTILOS NUEVOS: MOSTRAR/OCULTAR CONTRASEÑA --- */
+        .cred-password-text {
+            font-size: 11px;
+            font-family: monospace;
+            color: var(--text-muted);
+            margin-top: 2px;
+            background: var(--input-bg);
+            padding: 2px 6px;
+            border-radius: 4px;
+            display: none;
+            /* Oculto por defecto */
+            word-break: break-all;
+        }
+
+        .cred-password-text.visible {
+            display: block;
+        }
+
+        /* Configuración */
+        .settings-option {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .settings-option span {
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .settings-option:last-child {
+            border-bottom: none;
+        }
+
+        .msg {
+            font-size: 12px;
+            margin-top: 10px;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .msg.error {
+            color: var(--danger);
+        }
+
+        .msg.success {
+            color: #34D399;
+        }
+
+        .helper-text {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Crear Bóveda -->
+    <div id="create-section" class="hidden">
+        <div class="header">
+            <h2>✨ Crear Bóveda</h2>
+        </div>
+        <div class="container">
+            <p class="helper-text">Elige una contraseña maestra segura (mín. 12 caracteres).</p>
+            <div class="form-group"><input type="password" id="new-password" placeholder="Contraseña maestra"></div>
+            <div class="form-group"><input type="password" id="confirm-password" placeholder="Repite la contraseña">
+            </div>
+            <button id="btn-create" class="btn-primary">Crear Bóveda</button>
+            <div id="create-msg" class="msg error"></div>
+        </div>
+    </div>
+
+    <!-- Desbloquear -->
+    <div id="unlock-section" class="hidden">
+        <div class="header">
+            <h2>🔐 Desbloquear</h2>
+        </div>
+        <div class="container">
+            <div class="form-group"><input type="password" id="master-password" placeholder="Contraseña maestra"></div>
+            <button id="btn-unlock" class="btn-primary">Desbloquear</button>
+            <div id="unlock-msg" class="msg error"></div>
+        </div>
+    </div>
+
+    <!-- Principal -->
+    <div id="main-section" class="hidden">
+        <div class="header">
+            <h2>Mis Contraseñas</h2>
+            <div class="header-actions">
+                <button id="btn-settings" class="btn-icon" title="Configuración">⚙️</button>
+                <button id="btn-lock" class="btn-icon" title="Bloquear">🔒</button>
+            </div>
+        </div>
+
+        <div class="container">
+
+            <div class="tabs">
+                <button class="tab active" data-target="view-list">Mis Claves</button>
+                <button class="tab" data-target="view-add">Añadir</button>
+                <button class="tab" data-target="view-import">Importar</button>
+            </div>
+
+            <!-- Lista -->
+            <div id="view-list">
+                <div class="search-box">
+                    <input type="text" id="search-credentials" placeholder="Buscar...">
+                </div>
+                <div id="credentials-list"></div>
+            </div>
+
+            <!-- Añadir -->
+            <div id="view-add" class="hidden">
+                <div class="form-group"><input type="text" id="cred-name" placeholder="Nombre (ej: Google)"></div>
+                <div class="form-group"><input type="text" id="cred-website" placeholder="Sitio web (ej: google.com)">
+                </div>
+                <div class="form-group"><input type="text" id="cred-username" placeholder="Usuario / Email"></div>
+
+                <!-- GENERADOR DE CONTRASEÑAS -->
+                <div class="generator-options">
+                    <label for="pass-length">Longitud:</label>
+                    <select id="pass-length">
+                        <option value="12">12</option>
+                        <option value="16" selected>16</option>
+                        <option value="24">24</option>
+                        <option value="32">32</option>
+                    </select>
+                </div>
+                <div class="form-group password-wrapper">
+                    <input type="password" id="cred-password" placeholder="Contraseña">
+                    <button id="btn-generate" class="btn-generator" title="Generar contraseña aleatoria">🎲</button>
+                </div>
+
+                <div class="form-group"><input type="text" id="cred-notes" placeholder="Notas (opcional)"></div>
+                <button id="btn-add" class="btn-primary">Guardar</button>
+                <div id="add-msg" class="msg error"></div>
+            </div>
+
+            <!-- Importar -->
+            <div id="view-import" class="hidden">
+                <p class="helper-text">Sube un archivo CSV exportado.</p>
+                <div class="form-group"><input type="file" id="csv-file" accept=".csv"></div>
+                <button id="btn-import" class="btn-primary">Importar</button>
+                <div id="import-msg" class="msg success"></div>
+            </div>
+
+            <!-- Configuración -->
+            <div id="view-settings" class="hidden">
+                <div class="settings-option">
+                    <span>Modo Oscuro</span>
+                    <input type="checkbox" id="toggle-dark-mode"
+                        style="width: 20px; height: 20px; cursor: pointer; accent-color: var(--primary);">
+                </div>
+                <p class="helper-text" style="margin-top: 16px;">
+                    <b>Sobre los íconos:</b><br>
+                    El sistema asigna automáticamente un color y las iniciales de cada credencial para que sea fácil de
+                    identificar visualmente.
+                </p>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+
+</html>
