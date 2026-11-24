@@ -1,4 +1,17 @@
-const API_URL = "http://localhost:3000";
+const API_URL = "http://127.0.0.1:3000";
+
+async function apiFetch(url, options = {}) {
+  const auth = await chrome.runtime.sendMessage({ action: "GET_API_TOKEN" });
+  if (!auth?.ok || !auth.token) {
+    throw new Error(
+      auth?.error || "No se pudo autenticar con el servidor local.",
+    );
+  }
+  const headers = new Headers(options.headers || {});
+  headers.set("Authorization", `Bearer ${auth.token}`);
+  headers.set("X-LPM-Extension-ID", chrome.runtime.id); // <-- nueva
+  return fetch(url, { ...options, headers, cache: "no-store" });
+}
 
 // Paleta de colores para los avatares
 const AVATAR_COLORS = [
@@ -128,8 +141,12 @@ function showSection(id) {
 
 async function checkVaultStatus() {
   try {
-    const res = await fetch(`${API_URL}/vault/status`);
+    const res = await apiFetch(`${API_URL}/vault/status`);
     const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data?.error || `Error HTTP ${res.status}`);
+    }
 
     if (!data.exists) {
       showSection("create-section");
@@ -142,8 +159,9 @@ async function checkVaultStatus() {
       if (unlocked) await chrome.storage.session.remove("unlocked");
       showSection("unlock-section");
     }
-  } catch {
-    alert("No se pudo conectar con el servidor.");
+  } catch (err) {
+    console.error("[POPUP] Error al verificar estado de la bóveda:", err);
+    alert(err?.message || "No se pudo conectar con el servidor.");
   }
 }
 
@@ -159,7 +177,7 @@ async function createVault() {
   }
 
   try {
-    const res = await fetch(`${API_URL}/vault/create`, {
+    const res = await apiFetch(`${API_URL}/vault/create`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ masterPassword: pass }),
@@ -183,7 +201,7 @@ async function unlockVault() {
   msg.textContent = "";
 
   try {
-    const res = await fetch(`${API_URL}/vault/unlock`, {
+    const res = await apiFetch(`${API_URL}/vault/unlock`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ masterPassword: pass }),
@@ -203,7 +221,7 @@ async function unlockVault() {
 }
 
 async function lockVault() {
-  await fetch(`${API_URL}/vault/lock`, { method: "POST" });
+  await apiFetch(`${API_URL}/vault/lock`, { method: "POST" });
   await chrome.storage.session.remove("unlocked");
   document.getElementById("search-credentials").value = "";
   showSection("unlock-section");
@@ -218,7 +236,7 @@ async function loadCredentials() {
     '<p style="text-align:center; font-size:12px; color:var(--text-muted);">Cargando...</p>';
 
   try {
-    const res = await fetch(`${API_URL}/credentials`);
+    const res = await apiFetch(`${API_URL}/credentials`);
     allLoadedCredentials = await res.json();
     renderCredentialList(allLoadedCredentials);
   } catch {
@@ -229,71 +247,98 @@ async function loadCredentials() {
 
 function renderCredentialList(creds) {
   const list = document.getElementById("credentials-list");
+  list.replaceChildren();
 
   if (creds.length === 0) {
-    list.innerHTML =
-      '<p style="text-align:center; font-size:12px; color:var(--text-muted); padding: 20px 0;">No hay credenciales.</p>';
+    const empty = document.createElement("p");
+    empty.textContent = "No hay credenciales.";
+    empty.style.cssText =
+      "text-align:center;font-size:12px;color:var(--text-muted);padding:20px 0;";
+    list.appendChild(empty);
     return;
   }
 
-  list.innerHTML = creds
-    .map((c) => {
-      const initial = c.name.charAt(0).toUpperCase();
-      const color = getAvatarColor(c.name);
+  for (const credential of creds) {
+    const item = document.createElement("div");
+    item.className = "credential";
 
-      return `
-    <div class="credential">
-      <div class="cred-avatar" style="background-color: ${color};">${initial}</div>
-      <div class="cred-info">
-        <span class="cred-name">${c.name}</span>
-        <span class="cred-user">${c.username}</span>
-        <span class="cred-password-text" id="pass-${c.id}" data-password="${c.password}">${c.password}</span>
-      </div>
-      <div class="cred-actions">
-        <button data-id="${c.id}" class="btn-toggle-pass" title="Mostrar/Ocultar">👁️</button>
-        <button data-id="${c.id}" class="btn-copy" title="Copiar Contraseña">📋</button>
-        <button data-id="${c.id}" class="btn-del btn-delete" title="Eliminar">🗑️</button>
-      </div>
-    </div>
-    `;
-    })
-    .join("");
+    const avatar = document.createElement("div");
+    avatar.className = "cred-avatar";
+    avatar.style.backgroundColor = getAvatarColor(credential.name);
+    avatar.textContent = credential.name.charAt(0).toUpperCase();
 
-  // Toggle Ver/Ocultar
-  document.querySelectorAll(".btn-toggle-pass").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const span = document.getElementById(`pass-${btn.dataset.id}`);
-      if (span) {
-        span.classList.toggle("visible");
-        btn.textContent = span.classList.contains("visible") ? "🙈" : "👁️";
+    const info = document.createElement("div");
+    info.className = "cred-info";
+
+    const name = document.createElement("span");
+    name.className = "cred-name";
+    name.textContent = credential.name;
+
+    const username = document.createElement("span");
+    username.className = "cred-user";
+    username.textContent = credential.username;
+
+    const password = document.createElement("span");
+    password.className = "cred-password-text";
+    password.id = `pass-${credential.id}`;
+    password.textContent = credential.password;
+
+    info.append(name, username, password);
+
+    const actions = document.createElement("div");
+    actions.className = "cred-actions";
+
+    const toggleButton = document.createElement("button");
+    toggleButton.className = "btn-toggle-pass";
+    toggleButton.dataset.id = String(credential.id);
+    toggleButton.title = "Mostrar/Ocultar";
+    toggleButton.textContent = "👁️";
+    toggleButton.addEventListener("click", () => {
+      password.classList.toggle("visible");
+      toggleButton.textContent = password.classList.contains("visible")
+        ? "🙈"
+        : "👁️";
+    });
+
+    const copyButton = document.createElement("button");
+    copyButton.className = "btn-copy";
+    copyButton.dataset.id = String(credential.id);
+    copyButton.title = "Copiar contraseña";
+    copyButton.textContent = "📋";
+    copyButton.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(credential.password);
+        const originalText = copyButton.textContent;
+        copyButton.textContent = "✅";
+        setTimeout(() => {
+          copyButton.textContent = originalText;
+          window.close();
+        }, 800);
+      } catch {
+        copyButton.textContent = "⚠️";
       }
     });
-  });
 
-  // Copiar + Auto-cierre
-  document.querySelectorAll(".btn-copy").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const cred = allLoadedCredentials.find((c) => c.id == btn.dataset.id);
-      navigator.clipboard.writeText(cred.password);
-      const originalText = btn.textContent;
-      btn.textContent = "✅";
-      setTimeout(() => {
-        btn.textContent = originalText;
-        window.close(); // Auto-cierre después de copiar
-      }, 800);
-    });
-  });
-
-  // Eliminar
-  document.querySelectorAll(".btn-delete").forEach((btn) => {
-    btn.addEventListener("click", async () => {
+    const deleteButton = document.createElement("button");
+    deleteButton.className = "btn-del btn-delete";
+    deleteButton.dataset.id = String(credential.id);
+    deleteButton.title = "Eliminar";
+    deleteButton.textContent = "🗑️";
+    deleteButton.addEventListener("click", async () => {
       if (!confirm("¿Eliminar esta credencial?")) return;
-      await fetch(`${API_URL}/credentials/${btn.dataset.id}`, {
-        method: "DELETE",
-      });
-      loadCredentials();
+      const response = await apiFetch(
+        `${API_URL}/credentials/${credential.id}`,
+        {
+          method: "DELETE",
+        },
+      );
+      if (response.ok) loadCredentials();
     });
-  });
+
+    actions.append(toggleButton, copyButton, deleteButton);
+    item.append(avatar, info, actions);
+    list.appendChild(item);
+  }
 }
 
 function filterCredentials(e) {
@@ -322,7 +367,7 @@ async function addCredential() {
   }
 
   try {
-    const res = await fetch(`${API_URL}/credentials`, {
+    const res = await apiFetch(`${API_URL}/credentials`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, website, username, password, notes }),
@@ -370,7 +415,7 @@ async function importCSV() {
     msg.textContent = "Importando...";
 
     try {
-      const res = await fetch(`${API_URL}/credentials/import`, {
+      const res = await apiFetch(`${API_URL}/credentials/import`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ csvData }),

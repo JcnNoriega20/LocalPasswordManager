@@ -41,7 +41,7 @@
             };
 
             const respuesta = await fetch(
-                "http://localhost:3000/credentials",
+                "http://127.0.0.1:3000/credentials",
                 {
                     method: "POST",
                     headers: {
@@ -61,7 +61,7 @@
         async function obtenerCredenciales() {
 
             const respuesta = await fetch(
-                "http://localhost:3000/credentials"
+                "http://127.0.0.1:3000/credentials"
             );
 
             const resultado = await respuesta.json();
@@ -81,7 +81,7 @@
             };
 
             const respuesta = await fetch(
-                "http://localhost:3000/credentials/1",
+                "http://127.0.0.1:3000/credentials/1",
                 {
                     method: "PUT",
                     headers: {
@@ -100,7 +100,7 @@
         async function eliminarCredencial() {
 
             const respuesta = await fetch(
-                "http://localhost:3000/credentials/1",
+                "http://127.0.0.1:3000/credentials/1",
                 {
                     method: "DELETE"
                 }

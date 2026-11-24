@@ -1,0 +1,29 @@
+# Dependencies and build output
+node_modules/
+dist/
+
+# Local vault data and SQLite sidecar files
+/data/
+*.db
+*.sqlite
+*.sqlite3
+*.db-wal
+*.db-shm
+*.sqlite-wal
+*.sqlite-shm
+*.zip
+*.rar
+
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+
+# Plaintext imports / temporary files
+temp_import_*.csv
+*.csv.tmp
+
+# Logs and OS files
+*.log
+.DS_Store
+Thumbs.db

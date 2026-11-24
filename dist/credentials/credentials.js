@@ -13,92 +13,48 @@ const vault_session_1 = require("../vault/vault-session");
 function createCredential(credential) {
     const key = (0, vault_session_1.getVaultKey)();
     const now = new Date().toISOString();
-    const encryptedUsername = (0, crypto_1.encrypt)(credential.username, key);
-    const encryptedPassword = (0, crypto_1.encrypt)(credential.password, key);
-    const encryptedNotes = credential.notes
-        ? (0, crypto_1.encrypt)(credential.notes, key)
-        : null;
-    const result = database_1.default
-        .prepare(`
-      INSERT INTO credentials (
-        name,
-        website,
-        username,
-        password,
-        notes,
-        created_at,
-        updated_at
-      )
-      VALUES (?, ?, ?, ?, ?, ?, ?)
-    `)
-        .run(credential.name, credential.website, encryptedUsername, encryptedPassword, encryptedNotes, now, now);
+    const result = database_1.default.prepare(`
+    INSERT INTO credentials (
+      name, website, username, password, notes, created_at, updated_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?)
+  `).run((0, crypto_1.encrypt)(credential.name, key), (0, crypto_1.encrypt)(credential.website, key), (0, crypto_1.encrypt)(credential.username, key), (0, crypto_1.encrypt)(credential.password, key), credential.notes ? (0, crypto_1.encrypt)(credential.notes, key) : null, now, now);
     return Number(result.lastInsertRowid);
 }
 function getCredentials() {
     const key = (0, vault_session_1.getVaultKey)();
-    const credentials = database_1.default
-        .prepare(`
-      SELECT
-        id,
-        name,
-        website,
-        username,
-        password,
-        notes,
-        created_at,
-        updated_at
-      FROM credentials
-      ORDER BY name ASC
-    `)
-        .all();
-    return credentials.map((credential) => {
-        return {
-            id: credential.id,
-            name: credential.name,
-            website: credential.website,
-            username: (0, crypto_1.decrypt)(credential.username, key),
-            password: (0, crypto_1.decrypt)(credential.password, key),
-            notes: credential.notes
-                ? (0, crypto_1.decrypt)(credential.notes, key)
-                : null,
-            created_at: credential.created_at,
-            updated_at: credential.updated_at
-        };
-    });
+    const credentials = database_1.default.prepare(`
+    SELECT id, name, website, username, password, notes, created_at, updated_at
+    FROM credentials
+    ORDER BY id DESC
+  `).all();
+    return credentials
+        .map((credential) => ({
+        id: credential.id,
+        name: (0, crypto_1.decrypt)(credential.name, key),
+        website: (0, crypto_1.decrypt)(credential.website, key),
+        username: (0, crypto_1.decrypt)(credential.username, key),
+        password: (0, crypto_1.decrypt)(credential.password, key),
+        notes: credential.notes ? (0, crypto_1.decrypt)(credential.notes, key) : null,
+        created_at: credential.created_at,
+        updated_at: credential.updated_at,
+    }))
+        .sort((a, b) => a.name.localeCompare(b.name));
 }
 function updateCredential(id, credential) {
     const key = (0, vault_session_1.getVaultKey)();
-    const encryptedUsername = (0, crypto_1.encrypt)(credential.username, key);
-    const encryptedPassword = (0, crypto_1.encrypt)(credential.password, key);
-    const encryptedNotes = credential.notes
-        ? (0, crypto_1.encrypt)(credential.notes, key)
-        : null;
     const now = new Date().toISOString();
-    const result = database_1.default
-        .prepare(`
-      UPDATE credentials
-      SET
-        name = ?,
-        website = ?,
-        username = ?,
-        password = ?,
-        notes = ?,
-        updated_at = ?
-      WHERE id = ?
-    `)
-        .run(credential.name, credential.website, encryptedUsername, encryptedPassword, encryptedNotes, now, id);
-    if (result.changes === 0) {
+    const result = database_1.default.prepare(`
+    UPDATE credentials
+    SET name = ?, website = ?, username = ?, password = ?, notes = ?, updated_at = ?
+    WHERE id = ?
+  `).run((0, crypto_1.encrypt)(credential.name, key), (0, crypto_1.encrypt)(credential.website, key), (0, crypto_1.encrypt)(credential.username, key), (0, crypto_1.encrypt)(credential.password, key), credential.notes ? (0, crypto_1.encrypt)(credential.notes, key) : null, now, id);
+    if (result.changes === 0)
         throw new Error("Credencial no encontrada.");
-    }
 }
 function deleteCredential(id) {
-    const result = database_1.default
-        .prepare(`
-      DELETE FROM credentials
-      WHERE id = ?
-    `)
-        .run(id);
-    if (result.changes === 0) {
+    // Keep the domain layer safe even if it is called outside an HTTP route.
+    (0, vault_session_1.getVaultKey)();
+    const result = database_1.default.prepare("DELETE FROM credentials WHERE id = ?").run(id);
+    if (result.changes === 0)
         throw new Error("Credencial no encontrada.");
-    }
 }

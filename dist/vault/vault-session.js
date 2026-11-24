@@ -8,7 +8,7 @@ exports.isVaultUnlocked = isVaultUnlocked;
 exports.lockVault = lockVault;
 let activeKey = null;
 let inactivityTimer = null;
-// Tiempo de inactividad antes de bloquear automáticamente (5 minutos)
+// Tiempo de inactividad antes de bloquear automáticamente (2 minutos)
 const INACTIVITY_TIMEOUT_MS = 2 * 60 * 1000;
 /**
  * Reinicia el temporizador de inactividad.

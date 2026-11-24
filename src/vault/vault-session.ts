@@ -1,7 +1,7 @@
 let activeKey: Buffer | null = null;
 let inactivityTimer: NodeJS.Timeout | null = null;
 
-// Tiempo de inactividad antes de bloquear automáticamente (5 minutos)
+// Tiempo de inactividad antes de bloquear automáticamente (2 minutos)
 const INACTIVITY_TIMEOUT_MS = 2 * 60 * 1000;
 
 /**

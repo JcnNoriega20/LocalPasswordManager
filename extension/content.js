@@ -178,7 +178,15 @@ function showSelectionMenu(matches) {
       "mouseleave",
       () => (item.style.backgroundColor = "transparent"),
     );
-    item.innerHTML = `<div style="font-weight: bold; font-size: 14px;">${cred.name}</div><div style="font-size: 12px; color: #a6adc8;">${cred.username}</div>`;
+    const credentialName = document.createElement("div");
+    credentialName.textContent = cred.name;
+    Object.assign(credentialName.style, { fontWeight: "bold", fontSize: "14px" });
+
+    const credentialUsername = document.createElement("div");
+    credentialUsername.textContent = cred.username;
+    Object.assign(credentialUsername.style, { fontSize: "12px", color: "#a6adc8" });
+
+    item.append(credentialName, credentialUsername);
     item.addEventListener("click", () => {
       fillFields(cred);
       showToast("✅ Credenciales rellenadas.", "success");
@@ -226,17 +234,38 @@ function showSaveSuggestion(host, username, password) {
     gap: "12px",
   });
 
-  banner.innerHTML = `
-        <div>
-            <div style="font-weight: bold; margin-bottom: 4px;">💾 ¿Guardar contraseña?</div>
-            <div style="font-size: 12px; color: #a6adc8;">Sitio: <b>${host}</b><br>Usuario: <b>${username}</b></div>
-        </div>
-        <div style="display: flex; gap: 8px;">
-            <button id="pwm-save-yes" style="flex: 1; padding: 8px; border: none; border-radius: 6px; background: #8B5CF6; color: white; font-weight: bold; cursor: pointer;">Guardar</button>
-            <button id="pwm-save-no" style="flex: 1; padding: 8px; border: none; border-radius: 6px; background: #45475a; color: #cdd6f4; cursor: pointer;">Ahora no</button>
-        </div>
-    `;
+  const details = document.createElement("div");
+  const title = document.createElement("div");
+  title.textContent = "💾 ¿Guardar contraseña?";
+  Object.assign(title.style, { fontWeight: "bold", marginBottom: "4px" });
 
+  const siteLine = document.createElement("div");
+  siteLine.style.cssText = "font-size:12px;color:#a6adc8;";
+  siteLine.append(document.createTextNode("Sitio: "));
+  const siteValue = document.createElement("b");
+  siteValue.textContent = host;
+  siteLine.append(siteValue, document.createElement("br"));
+  siteLine.append(document.createTextNode("Usuario: "));
+  const usernameValue = document.createElement("b");
+  usernameValue.textContent = username;
+  siteLine.append(usernameValue);
+  details.append(title, siteLine);
+
+  const buttons = document.createElement("div");
+  Object.assign(buttons.style, { display: "flex", gap: "8px" });
+
+  const saveButton = document.createElement("button");
+  saveButton.id = "pwm-save-yes";
+  saveButton.textContent = "Guardar";
+  saveButton.style.cssText = "flex:1;padding:8px;border:0;border-radius:6px;background:#8B5CF6;color:white;font-weight:bold;cursor:pointer;";
+
+  const dismissButton = document.createElement("button");
+  dismissButton.id = "pwm-save-no";
+  dismissButton.textContent = "Ahora no";
+  dismissButton.style.cssText = "flex:1;padding:8px;border:0;border-radius:6px;background:#45475a;color:#cdd6f4;cursor:pointer;";
+
+  buttons.append(saveButton, dismissButton);
+  banner.append(details, buttons);
   document.body.appendChild(banner);
 
   // Botón "Guardar"
